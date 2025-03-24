@@ -3,15 +3,17 @@ import QuizScreen from './components/QuizScreen';
 import ResultsScreen from './components/ResultsScreen';
 import { portQuestions } from './data/portData';
 import { wifiQuestions } from './data/wifiData';
-
-type QuizType = 'ports' | 'wifi';
+import { Question, QuizConfig } from './types/quiz';
 
 function App() {
   const [isQuizStarted, setIsQuizStarted] = useState(false);
-  const [showAnswersImmediately, setShowAnswersImmediately] = useState(true);
   const [showResults, setShowResults] = useState(false);
   const [results, setResults] = useState({ correct: 0, total: 0 });
-  const [enabledQuizzes, setEnabledQuizzes] = useState<Set<QuizType>>(new Set(['ports']));
+  const [config, setConfig] = useState<QuizConfig>({
+    showAnswersImmediately: true,
+    enabledCategories: new Set(['ports']),
+    hardMode: false,
+  });
 
   const handleViewResults = (correct: number, total: number) => {
     setResults({ correct, total });
@@ -21,29 +23,39 @@ function App() {
   const handleRestart = () => {
     setShowResults(false);
     setIsQuizStarted(false);
+    setResults({ correct: 0, total: 0 });
   };
 
-  const toggleQuizType = (type: QuizType) => {
-    setEnabledQuizzes(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(type)) {
-        newSet.delete(type);
+  const handleExitQuiz = () => {
+    setIsQuizStarted(false);
+    setShowResults(false);
+    setResults({ correct: 0, total: 0 });
+  };
+
+  const toggleCategory = (category: string) => {
+    setConfig(prev => {
+      const newSet = new Set(prev.enabledCategories);
+      if (newSet.has(category)) {
+        newSet.delete(category);
       } else {
-        newSet.add(type);
+        newSet.add(category);
       }
-      return newSet;
+      return {
+        ...prev,
+        enabledCategories: newSet,
+      };
     });
   };
 
-  const getQuestions = (type: QuizType) => {
-    switch (type) {
-      case 'ports':
-        return portQuestions;
-      case 'wifi':
-        return wifiQuestions;
-      default:
-        return portQuestions;
+  const getQuestions = (): Question[] => {
+    const questions: Question[] = [];
+    if (config.enabledCategories.has('ports')) {
+      questions.push(...portQuestions);
     }
+    if (config.enabledCategories.has('wifi')) {
+      questions.push(...wifiQuestions);
+    }
+    return questions;
   };
 
   if (showResults) {
@@ -52,20 +64,19 @@ function App() {
         correctAnswers={results.correct}
         totalQuestions={results.total}
         onRestart={handleRestart}
-        onExit={() => setIsQuizStarted(false)}
+        onExit={handleExitQuiz}
       />
     );
   }
 
   if (isQuizStarted) {
-    // Get all enabled quiz types and combine their questions
-    const allQuestions = Array.from(enabledQuizzes).flatMap(type => getQuestions(type));
     return (
       <QuizScreen
-        showAnswersImmediately={showAnswersImmediately}
-        onExit={() => setIsQuizStarted(false)}
+        showAnswersImmediately={config.showAnswersImmediately}
+        hardMode={config.hardMode}
+        onExit={handleExitQuiz}
         onViewResults={handleViewResults}
-        questions={allQuestions}
+        questions={getQuestions()}
       />
     );
   }
@@ -86,14 +97,30 @@ function App() {
             <div className="flex items-center justify-center gap-3">
               <span className="text-white">Show answers:</span>
               <button
-                onClick={() => setShowAnswersImmediately(!showAnswersImmediately)}
+                onClick={() => setConfig(prev => ({ ...prev, showAnswersImmediately: !prev.showAnswersImmediately }))}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  showAnswersImmediately ? 'bg-green-600' : 'bg-zinc-700'
+                  config.showAnswersImmediately ? 'bg-green-600' : 'bg-zinc-700'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    showAnswersImmediately ? 'translate-x-6' : 'translate-x-1'
+                    config.showAnswersImmediately ? 'translate-x-6' : 'translate-x-1'
+                  }`}
+                />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-white">Hard Mode:</span>
+              <button
+                onClick={() => setConfig(prev => ({ ...prev, hardMode: !prev.hardMode }))}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  config.hardMode ? 'bg-red-600' : 'bg-zinc-700'
+                }`}
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                    config.hardMode ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -102,14 +129,14 @@ function App() {
             <div className="flex items-center justify-center gap-3">
               <span className="text-white">Port Numbers:</span>
               <button
-                onClick={() => toggleQuizType('ports')}
+                onClick={() => toggleCategory('ports')}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enabledQuizzes.has('ports') ? 'bg-green-600' : 'bg-zinc-700'
+                  config.enabledCategories.has('ports') ? 'bg-green-600' : 'bg-zinc-700'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    enabledQuizzes.has('ports') ? 'translate-x-6' : 'translate-x-1'
+                    config.enabledCategories.has('ports') ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -118,14 +145,14 @@ function App() {
             <div className="flex items-center justify-center gap-3">
               <span className="text-white">WiFi Standards:</span>
               <button
-                onClick={() => toggleQuizType('wifi')}
+                onClick={() => toggleCategory('wifi')}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  enabledQuizzes.has('wifi') ? 'bg-green-600' : 'bg-zinc-700'
+                  config.enabledCategories.has('wifi') ? 'bg-green-600' : 'bg-zinc-700'
                 }`}
               >
                 <span
                   className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    enabledQuizzes.has('wifi') ? 'translate-x-6' : 'translate-x-1'
+                    config.enabledCategories.has('wifi') ? 'translate-x-6' : 'translate-x-1'
                   }`}
                 />
               </button>
@@ -134,9 +161,9 @@ function App() {
 
           <button 
             onClick={() => setIsQuizStarted(true)}
-            disabled={enabledQuizzes.size === 0}
+            disabled={config.enabledCategories.size === 0}
             className={`text-white font-semibold py-3 px-8 rounded-md transition-all ${
-              enabledQuizzes.size === 0
+              config.enabledCategories.size === 0
                 ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
                 : "bg-zinc-800 hover:bg-zinc-700"
             }`}

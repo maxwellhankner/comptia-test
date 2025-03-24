@@ -1,41 +1,48 @@
-import { useState } from 'react';
-import { PortQuestion } from '../data/portData';
+import { Question } from '../types/quiz';
+import { useQuizNavigation } from '../hooks/useQuizNavigation';
+import { QuestionDisplay } from './quiz/QuestionDisplay';
+import { AnswerOptions } from './quiz/AnswerOptions';
+import { NavigationButtons } from './quiz/NavigationButtons';
 
 interface QuizScreenProps {
   showAnswersImmediately: boolean;
+  hardMode: boolean;
   onExit: () => void;
   onViewResults: (correct: number, total: number) => void;
-  questions: PortQuestion[];
+  questions: Question[];
 }
 
-export default function QuizScreen({ showAnswersImmediately, onExit, onViewResults, questions }: QuizScreenProps) {
-  const [currentQuestion, setCurrentQuestion] = useState<number>(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showAnswer, setShowAnswer] = useState<boolean>(false);
-  const [correctAnswers, setCorrectAnswers] = useState<number>(0);
-
-  const handleAnswerSelect = (answerIndex: number) => {
-    setSelectedAnswer(answerIndex);
-    if (showAnswersImmediately) {
-      setShowAnswer(true);
-      if (answerIndex === questions[currentQuestion].correctAnswer) {
-        setCorrectAnswers(prev => prev + 1);
-      }
-    }
-  };
-
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedAnswer(null);
-      setShowAnswer(false);
-    } else {
-      onViewResults(correctAnswers, questions.length);
-    }
-  };
+export default function QuizScreen({ showAnswersImmediately, hardMode, onExit, onViewResults, questions }: QuizScreenProps) {
+  const {
+    state,
+    handleAnswerSelect,
+    handleHardModeInput,
+    handleHardModeSubmit,
+    handleNextQuestion,
+    currentQuestion,
+    isLastQuestion,
+  } = useQuizNavigation(questions, showAnswersImmediately, hardMode);
 
   const handleViewResults = () => {
-    onViewResults(correctAnswers, currentQuestion + 1);
+    console.log('View Results - Current State:', {
+      correctAnswers: state.correctAnswers,
+      totalQuestions: state.currentQuestion + 1,
+      currentQuestion: currentQuestion,
+      hardModeInput: state.hardModeInput,
+      hardModeAnswer: currentQuestion.hardModeAnswer,
+    });
+    onViewResults(state.correctAnswers, state.currentQuestion + 1);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && hardMode) {
+      e.preventDefault();
+      console.log('Enter pressed - Current Input:', {
+        input: state.hardModeInput,
+        correctAnswer: currentQuestion.hardModeAnswer,
+      });
+      handleHardModeSubmit();
+    }
   };
 
   return (
@@ -51,58 +58,64 @@ export default function QuizScreen({ showAnswersImmediately, onExit, onViewResul
             </svg>
           </button>
           
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-white">Question {currentQuestion + 1}</h2>
-          </div>
+          <QuestionDisplay
+            question={currentQuestion}
+            questionNumber={state.currentQuestion + 1}
+            totalQuestions={questions.length}
+          />
           
-          <div className="mb-8">
-            <p className="text-xl text-white mb-6">{questions[currentQuestion].question}</p>
-            <div className="space-y-3">
-              {questions[currentQuestion].options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  disabled={showAnswer}
-                  className={`w-full p-3 rounded-md text-left transition-all ${
-                    selectedAnswer === index
-                      ? showAnswer
-                        ? index === questions[currentQuestion].correctAnswer
-                          ? "bg-green-600"
-                          : "bg-red-600"
-                        : "bg-zinc-700"
-                      : "bg-zinc-800 hover:bg-zinc-700"
-                  } text-white`}
-                >
-                  {option}
-                </button>
-              ))}
+          {hardMode ? (
+            <div className="mb-8">
+              <input
+                type="text"
+                value={state.hardModeInput}
+                onChange={(e) => {
+                  console.log('Input Changed:', {
+                    newValue: e.target.value,
+                    currentQuestion: currentQuestion.question,
+                    hardModeAnswer: currentQuestion.hardModeAnswer,
+                  });
+                  handleHardModeInput(e.target.value);
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Type your answer..."
+                disabled={state.showAnswer}
+                className="w-full p-3 rounded-md bg-zinc-800 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-600"
+              />
+              {state.showAnswer && currentQuestion.hardModeAnswer && (
+                <div className={`mt-2 text-sm ${
+                  state.hardModeInput.toLowerCase().trim() === currentQuestion.hardModeAnswer.toLowerCase().trim()
+                    ? 'text-green-500'
+                    : 'text-red-500'
+                }`}>
+                  {(() => {
+                    const isCorrect = state.hardModeInput.toLowerCase().trim() === currentQuestion.hardModeAnswer.toLowerCase().trim();
+                    console.log('Answer Display:', {
+                      userInput: state.hardModeInput,
+                      correctAnswer: currentQuestion.hardModeAnswer,
+                      isCorrect,
+                      comparison: `${state.hardModeInput.toLowerCase().trim()} === ${currentQuestion.hardModeAnswer.toLowerCase().trim()}`,
+                    });
+                    return isCorrect ? 'Correct!' : `Incorrect. The correct answer is: ${currentQuestion.hardModeAnswer}`;
+                  })()}
+                </div>
+              )}
             </div>
-          </div>
+          ) : (
+            <AnswerOptions
+              question={currentQuestion}
+              selectedAnswer={state.selectedAnswer}
+              showAnswer={state.showAnswer}
+              onAnswerSelect={handleAnswerSelect}
+            />
+          )}
 
-          <div className="flex gap-4 justify-center">
-            <button
-              onClick={handleViewResults}
-              disabled={selectedAnswer === null}
-              className={`text-white font-semibold py-2 px-8 rounded-md transition-all ${
-                selectedAnswer === null
-                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                  : "bg-zinc-800 hover:bg-zinc-700"
-              }`}
-            >
-              View Results
-            </button>
-            <button
-              onClick={handleNextQuestion}
-              disabled={selectedAnswer === null}
-              className={`text-white font-semibold py-2 px-8 rounded-md transition-all ${
-                selectedAnswer === null
-                  ? "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-                  : "bg-zinc-800 hover:bg-zinc-700"
-              }`}
-            >
-              {currentQuestion === questions.length - 1 ? "Finish" : "Next Question"}
-            </button>
-          </div>
+          <NavigationButtons
+            selectedAnswer={hardMode ? state.hardModeInput !== '' : state.selectedAnswer !== null}
+            isLastQuestion={isLastQuestion}
+            onNext={handleNextQuestion}
+            onViewResults={handleViewResults}
+          />
         </div>
       </main>
     </div>

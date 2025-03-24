@@ -1,119 +1,94 @@
-export interface WifiQuestion {
-  id: number;
-  question: string;
-  options: string[];
-  correctAnswer: number;
-}
+import { Question } from '../types/quiz';
 
-export const wifiQuestions: WifiQuestion[] = [
+export const wifiQuestions: Question[] = [
   {
-    id: 1,
-    question: "What is the maximum speed of 802.11 (Wi-Fi 0)?",
-    options: [
-      "1 Mbps",
-      "2 Mbps",
-      "5 Mbps",
-      "10 Mbps"
-    ],
-    correctAnswer: 1
+    id: 'wifi-1',
+    category: 'wifi',
+    question: 'What is the maximum theoretical speed of 802.11b?',
+    options: ['5 Mbps', '11 Mbps', '54 Mbps', '100 Mbps'],
+    correctAnswer: 1,
+    explanation: '802.11b has a maximum theoretical speed of 11 Mbps.',
+    hardModeAnswer: '11 Mbps',
   },
   {
-    id: 2,
-    question: "Which WiFi standard operates at 2.4GHz with a maximum speed of 11Mbps?",
-    options: [
-      "802.11a",
-      "802.11b",
-      "802.11g",
-      "802.11n"
-    ],
-    correctAnswer: 1
+    id: 'wifi-2',
+    category: 'wifi',
+    question: 'What is the maximum theoretical speed of 802.11g?',
+    options: ['11 Mbps', '54 Mbps', '100 Mbps', '300 Mbps'],
+    correctAnswer: 1,
+    explanation: '802.11g has a maximum theoretical speed of 54 Mbps.',
+    hardModeAnswer: '54 Mbps',
   },
   {
-    id: 3,
-    question: "What is the maximum speed of 802.11a (Wi-Fi 2)?",
-    options: [
-      "11 Mbps",
-      "54 Mbps",
-      "150 Mbps",
-      "300 Mbps"
-    ],
-    correctAnswer: 1
+    id: 'wifi-3',
+    category: 'wifi',
+    question: 'What is the maximum theoretical speed of 802.11n?',
+    options: ['54 Mbps', '100 Mbps', '300 Mbps', '600 Mbps'],
+    correctAnswer: 2,
+    explanation: '802.11n has a maximum theoretical speed of 300 Mbps.',
+    hardModeAnswer: '300 Mbps',
   },
   {
-    id: 4,
-    question: "Which WiFi standard operates at 2.4GHz with a maximum speed of 54Mbps?",
-    options: [
-      "802.11a",
-      "802.11b",
-      "802.11g",
-      "802.11n"
-    ],
-    correctAnswer: 2
+    id: 'wifi-4',
+    category: 'wifi',
+    question: 'What is the maximum theoretical speed of 802.11ac?',
+    options: ['300 Mbps', '600 Mbps', '1.3 Gbps', '6.9 Gbps'],
+    correctAnswer: 3,
+    explanation: '802.11ac has a maximum theoretical speed of 6.9 Gbps.',
+    hardModeAnswer: '6.9 Gbps',
   },
   {
-    id: 5,
-    question: "What is the maximum speed of 802.11n (Wi-Fi 4)?",
-    options: [
-      "150 Mbps",
-      "300 Mbps",
-      "450 Mbps",
-      "600 Mbps"
-    ],
-    correctAnswer: 3
+    id: 'wifi-5',
+    category: 'wifi',
+    question: 'What is the maximum theoretical speed of 802.11ax (Wi-Fi 6)?',
+    options: ['1.3 Gbps', '6.9 Gbps', '9.6 Gbps', '12 Gbps'],
+    correctAnswer: 2,
+    explanation: '802.11ax (Wi-Fi 6) has a maximum theoretical speed of 9.6 Gbps.',
+    hardModeAnswer: '9.6 Gbps',
   },
   {
-    id: 6,
-    question: "Which WiFi standard introduced MU-MIMO and operates at 5GHz?",
-    options: [
-      "802.11n",
-      "802.11ac",
-      "802.11ax",
-      "802.11g"
-    ],
-    correctAnswer: 1
+    id: 'wifi-6',
+    category: 'wifi',
+    question: 'Which 802.11 standard operates in the 5 GHz band only?',
+    options: ['802.11b', '802.11g', '802.11n', '802.11ac'],
+    correctAnswer: 3,
+    explanation: '802.11ac operates exclusively in the 5 GHz band.',
+    hardModeAnswer: '802.11ac',
   },
   {
-    id: 7,
-    question: "What is the maximum speed of 802.11ax (Wi-Fi 6)?",
-    options: [
-      "3.5 Gbps",
-      "6.9 Gbps",
-      "9.6 Gbps",
-      "10 Gbps"
-    ],
-    correctAnswer: 2
+    id: 'wifi-7',
+    category: 'wifi',
+    question: 'Which 802.11 standard introduced MIMO technology?',
+    options: ['802.11b', '802.11g', '802.11n', '802.11ac'],
+    correctAnswer: 2,
+    explanation: '802.11n introduced MIMO (Multiple-Input Multiple-Output) technology.',
+    hardModeAnswer: '802.11n',
   },
   {
-    id: 8,
-    question: "Which WiFi standard operates on both 2.4GHz and 5GHz bands?",
-    options: [
-      "802.11ac",
-      "802.11ax",
-      "802.11g",
-      "802.11a"
-    ],
-    correctAnswer: 1
+    id: 'wifi-8',
+    category: 'wifi',
+    question: 'Which 802.11 standard introduced OFDMA?',
+    options: ['802.11n', '802.11ac', '802.11ax', '802.11be'],
+    correctAnswer: 2,
+    explanation: '802.11ax (Wi-Fi 6) introduced OFDMA (Orthogonal Frequency Division Multiple Access).',
+    hardModeAnswer: '802.11ax',
   },
   {
-    id: 9,
-    question: "What channel width is used by 802.11b?",
-    options: [
-      "20 MHz",
-      "22 MHz",
-      "40 MHz",
-      "80 MHz"
-    ],
-    correctAnswer: 1
+    id: 'wifi-9',
+    category: 'wifi',
+    question: 'What is the maximum number of spatial streams supported by 802.11ac?',
+    options: ['2', '4', '8', '16'],
+    correctAnswer: 2,
+    explanation: '802.11ac supports up to 8 spatial streams.',
+    hardModeAnswer: '8',
   },
   {
-    id: 10,
-    question: "Which WiFi standard introduced MIMO technology?",
-    options: [
-      "802.11g",
-      "802.11n",
-      "802.11ac",
-      "802.11ax"
-    ],
-    correctAnswer: 1
-  }
+    id: 'wifi-10',
+    category: 'wifi',
+    question: 'Which 802.11 standard introduced beamforming?',
+    options: ['802.11n', '802.11ac', '802.11ax', '802.11be'],
+    correctAnswer: 0,
+    explanation: '802.11n introduced beamforming technology.',
+    hardModeAnswer: '802.11n',
+  },
 ]; 
