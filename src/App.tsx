@@ -5,45 +5,121 @@ import { portQuestions } from './data/portData';
 import { wifiQuestions } from './data/wifiData';
 import { Question, QuizConfig } from './types/quiz';
 
+interface QuizSettingsProps {
+  config: QuizConfig;
+  onConfigChange: (config: QuizConfig) => void;
+}
+
+const QuizSettings = ({ config, onConfigChange }: QuizSettingsProps) => {
+  const toggleCategory = (category: string) => {
+    const newSet = new Set(config.enabledCategories);
+    if (newSet.has(category)) {
+      newSet.delete(category);
+    } else {
+      newSet.add(category);
+    }
+    onConfigChange({ ...config, enabledCategories: newSet });
+  };
+
+  return (
+    <div className="space-y-4 mb-8">
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-white">Port Numbers:</span>
+        <button
+          onClick={() => toggleCategory('ports')}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            config.enabledCategories.has('ports') ? 'bg-green-600' : 'bg-zinc-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              config.enabledCategories.has('ports') ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-white">WiFi Standards:</span>
+        <button
+          onClick={() => toggleCategory('wifi')}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            config.enabledCategories.has('wifi') ? 'bg-green-600' : 'bg-zinc-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              config.enabledCategories.has('wifi') ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-white">Show answers:</span>
+        <button
+          onClick={() => onConfigChange({ ...config, showAnswersImmediately: !config.showAnswersImmediately })}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            config.showAnswersImmediately ? 'bg-green-600' : 'bg-zinc-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              config.showAnswersImmediately ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+
+      <div className="flex items-center justify-center gap-3">
+        <span className="text-white">Hard Mode:</span>
+        <button
+          onClick={() => onConfigChange({ ...config, hardMode: !config.hardMode })}
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+            config.hardMode ? 'bg-red-600' : 'bg-zinc-700'
+          }`}
+        >
+          <span
+            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+              config.hardMode ? 'translate-x-6' : 'translate-x-1'
+            }`}
+          />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 function App() {
-  const [isQuizStarted, setIsQuizStarted] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [results, setResults] = useState({ correct: 0, total: 0 });
+  const [quizState, setQuizState] = useState({
+    isStarted: false,
+    showResults: false,
+    results: { correct: 0, total: 0 }
+  });
+  
   const [config, setConfig] = useState<QuizConfig>({
     showAnswersImmediately: true,
-    enabledCategories: new Set(['ports']),
+    enabledCategories: new Set(['ports', 'wifi']),
     hardMode: false,
   });
 
   const handleViewResults = (correct: number, total: number) => {
-    setResults({ correct, total });
-    setShowResults(true);
+    setQuizState(prev => ({ ...prev, showResults: true, results: { correct, total } }));
   };
 
   const handleRestart = () => {
-    setShowResults(false);
-    setIsQuizStarted(false);
-    setResults({ correct: 0, total: 0 });
+    setQuizState({
+      isStarted: false,
+      showResults: false,
+      results: { correct: 0, total: 0 }
+    });
   };
 
   const handleExitQuiz = () => {
-    setIsQuizStarted(false);
-    setShowResults(false);
-    setResults({ correct: 0, total: 0 });
-  };
-
-  const toggleCategory = (category: string) => {
-    setConfig(prev => {
-      const newSet = new Set(prev.enabledCategories);
-      if (newSet.has(category)) {
-        newSet.delete(category);
-      } else {
-        newSet.add(category);
-      }
-      return {
-        ...prev,
-        enabledCategories: newSet,
-      };
+    setQuizState({
+      isStarted: false,
+      showResults: false,
+      results: { correct: 0, total: 0 }
     });
   };
 
@@ -58,18 +134,18 @@ function App() {
     return questions;
   };
 
-  if (showResults) {
+  if (quizState.showResults) {
     return (
       <ResultsScreen
-        correctAnswers={results.correct}
-        totalQuestions={results.total}
+        correctAnswers={quizState.results.correct}
+        totalQuestions={quizState.results.total}
         onRestart={handleRestart}
         onExit={handleExitQuiz}
       />
     );
   }
 
-  if (isQuizStarted) {
+  if (quizState.isStarted) {
     return (
       <QuizScreen
         showAnswersImmediately={config.showAnswersImmediately}
@@ -93,74 +169,10 @@ function App() {
             Perfect for both Core 1 (220-1101) and Core 2 (220-1102) exam preparation.
           </p>
           
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-white">Show answers:</span>
-              <button
-                onClick={() => setConfig(prev => ({ ...prev, showAnswersImmediately: !prev.showAnswersImmediately }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.showAnswersImmediately ? 'bg-green-600' : 'bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    config.showAnswersImmediately ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-white">Hard Mode:</span>
-              <button
-                onClick={() => setConfig(prev => ({ ...prev, hardMode: !prev.hardMode }))}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.hardMode ? 'bg-red-600' : 'bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    config.hardMode ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-white">Port Numbers:</span>
-              <button
-                onClick={() => toggleCategory('ports')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.enabledCategories.has('ports') ? 'bg-green-600' : 'bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    config.enabledCategories.has('ports') ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-
-            <div className="flex items-center justify-center gap-3">
-              <span className="text-white">WiFi Standards:</span>
-              <button
-                onClick={() => toggleCategory('wifi')}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  config.enabledCategories.has('wifi') ? 'bg-green-600' : 'bg-zinc-700'
-                }`}
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    config.enabledCategories.has('wifi') ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </button>
-            </div>
-          </div>
+          <QuizSettings config={config} onConfigChange={setConfig} />
 
           <button 
-            onClick={() => setIsQuizStarted(true)}
+            onClick={() => setQuizState(prev => ({ ...prev, isStarted: true }))}
             disabled={config.enabledCategories.size === 0}
             className={`text-white font-semibold py-3 px-8 rounded-md transition-all ${
               config.enabledCategories.size === 0

@@ -21,4 +21,5 @@ export interface QuizState {
 export interface QuizConfig {
   showAnswersImmediately: boolean;
   hardMode: boolean;
+  enabledCategories: Set<string>;
 } 

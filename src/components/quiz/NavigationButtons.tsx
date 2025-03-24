@@ -12,7 +12,7 @@ export function NavigationButtons({
   onViewResults,
 }: NavigationButtonsProps) {
   return (
-    <div className="flex gap-4 justify-center">
+    <div className="flex gap-4 justify-center mt-8">
       <button
         onClick={onViewResults}
         disabled={!selectedAnswer}

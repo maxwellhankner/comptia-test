@@ -53,20 +53,50 @@ export function useQuizNavigation(questions: Question[], showAnswersImmediately:
       const userAnswer = prev.hardModeInput.toLowerCase().trim();
       const correctAnswer = currentQuestion.hardModeAnswer?.toLowerCase().trim();
       
-      console.log('Hard Mode Submit - Answer Check:', {
+      console.log('Hard Mode Submit - Raw Values:', {
         question: currentQuestion.question,
+        rawUserInput: prev.hardModeInput,
+        rawCorrectAnswer: currentQuestion.hardModeAnswer,
         userAnswer,
         correctAnswer,
         hasHardModeAnswer: !!currentQuestion.hardModeAnswer,
         currentScore: prev.correctAnswers,
-        comparison: `${userAnswer} === ${correctAnswer}`,
       });
       
-      const isCorrect = correctAnswer && userAnswer === correctAnswer;
+      // Normalize both answers by removing any extra spaces and converting to lowercase
+      const normalizedUserAnswer = userAnswer.replace(/\s+/g, ' ').toLowerCase().trim();
+      const normalizedCorrectAnswer = correctAnswer?.replace(/\s+/g, ' ').toLowerCase().trim();
       
-      console.log('Hard Mode Submit - Result:', {
-        isCorrect,
-        newScore: isCorrect ? prev.correctAnswers + 1 : prev.correctAnswers,
+      console.log('Hard Mode Submit - Normalized Values:', {
+        normalizedUserAnswer,
+        normalizedCorrectAnswer,
+        userAnswerLength: normalizedUserAnswer.length,
+        correctAnswerLength: normalizedCorrectAnswer?.length,
+        userAnswerCharCodes: [...normalizedUserAnswer].map(c => c.charCodeAt(0)),
+        correctAnswerCharCodes: normalizedCorrectAnswer ? [...normalizedCorrectAnswer].map(c => c.charCodeAt(0)) : null,
+      });
+      
+      // If the answer contains only numbers, compare them as numbers
+      const isNumericAnswer = /^\d+$/.test(normalizedUserAnswer) && /^\d+$/.test(normalizedCorrectAnswer || '');
+      const isCorrect = correctAnswer && (
+        isNumericAnswer
+          ? parseInt(normalizedUserAnswer) === parseInt(normalizedCorrectAnswer || '')
+          : normalizedUserAnswer === normalizedCorrectAnswer
+      );
+      
+      console.log('Hard Mode Submit - Validation:', {
+        isNumericAnswer,
+        numericComparison: isNumericAnswer ? {
+          userNumber: parseInt(normalizedUserAnswer),
+          correctNumber: parseInt(normalizedCorrectAnswer || ''),
+          areEqual: parseInt(normalizedUserAnswer) === parseInt(normalizedCorrectAnswer || '')
+        } : null,
+        stringComparison: !isNumericAnswer ? {
+          areEqual: normalizedUserAnswer === normalizedCorrectAnswer,
+          userAnswer,
+          correctAnswer
+        } : null,
+        finalResult: isCorrect
       });
       
       return {
