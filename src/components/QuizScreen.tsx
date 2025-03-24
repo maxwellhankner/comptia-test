@@ -24,23 +24,18 @@ export default function QuizScreen({ showAnswersImmediately, hardMode, onExit, o
   } = useQuizNavigation(questions, showAnswersImmediately, hardMode);
 
   const handleViewResults = () => {
-    console.log('View Results - Current State:', {
-      correctAnswers: state.correctAnswers,
-      totalQuestions: state.currentQuestion + 1,
-      currentQuestion: currentQuestion,
-      hardModeInput: state.hardModeInput,
-      hardModeAnswer: currentQuestion.hardModeAnswer,
-    });
-    onViewResults(state.correctAnswers, state.currentQuestion + 1);
+    if (hardMode && state.hardModeInput && !state.showAnswer) {
+      handleHardModeSubmit(() => {
+        onViewResults(state.correctAnswers, state.currentQuestion + 1);
+      });
+    } else {
+      onViewResults(state.correctAnswers, state.currentQuestion + 1);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && hardMode) {
       e.preventDefault();
-      console.log('Enter pressed - Current Input:', {
-        input: state.hardModeInput,
-        correctAnswer: currentQuestion.hardModeAnswer,
-      });
       handleHardModeSubmit();
     }
   };
@@ -69,14 +64,7 @@ export default function QuizScreen({ showAnswersImmediately, hardMode, onExit, o
               <input
                 type="text"
                 value={state.hardModeInput}
-                onChange={(e) => {
-                  console.log('Input Changed:', {
-                    newValue: e.target.value,
-                    currentQuestion: currentQuestion.question,
-                    hardModeAnswer: currentQuestion.hardModeAnswer,
-                  });
-                  handleHardModeInput(e.target.value);
-                }}
+                onChange={(e) => handleHardModeInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type your answer..."
                 disabled={state.showAnswer}
@@ -90,12 +78,6 @@ export default function QuizScreen({ showAnswersImmediately, hardMode, onExit, o
                 }`}>
                   {(() => {
                     const isCorrect = state.hardModeInput.toLowerCase().trim() === currentQuestion.hardModeAnswer.toLowerCase().trim();
-                    console.log('Answer Display:', {
-                      userInput: state.hardModeInput,
-                      correctAnswer: currentQuestion.hardModeAnswer,
-                      isCorrect,
-                      comparison: `${state.hardModeInput.toLowerCase().trim()} === ${currentQuestion.hardModeAnswer.toLowerCase().trim()}`,
-                    });
                     return isCorrect ? 'Correct!' : `Incorrect. The correct answer is: ${currentQuestion.hardModeAnswer}`;
                   })()}
                 </div>
